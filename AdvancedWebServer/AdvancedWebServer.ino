@@ -32,9 +32,18 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <Servo.h> 
 
-const char* ssid = "ACIDBURN";
-const char* password = "day06031988";
+
+ 
+Servo myservo;  // create servo object to control a servo 
+                // twelve servo objects can be created on most boards
+                
+//const char* ssid = "ACIDBURN";
+//const char* password = "day06031988";
+
+const char* ssid = "lsiamostra24";
+const char* password = "lsiqazwsx";
 
 ESP8266WebServer server ( 80 );
 
@@ -101,35 +110,15 @@ void handleNotFound() {
 
 void setup ( void ) {
 	pinMode ( led, OUTPUT );
-
 	Serial.begin ( 115200 );
-	WiFi.begin ( ssid, password );
-	Serial.println ( "" );
-
-	// Wait for connection
-	while ( WiFi.status() != WL_CONNECTED ) {
-		delay ( 500 );
-		Serial.print ( "." );
-	}
-
-	Serial.println ( "" );
-	Serial.print ( "Connected to " );
-	Serial.println ( ssid );
-	Serial.print ( "IP address: " );
-	Serial.println ( WiFi.localIP() );
-
+  connect_wifi();
+  init_OTA_OverTheAir();
+  
 	if ( MDNS.begin ( "esp8266" ) ) {
 		Serial.println ( "MDNS responder started" );
 	}
 
-	server.on ( "/", handleRoot );
-	server.on ( "/test.svg", drawGraph );
-	server.on ( "/inline", []() {
-		server.send ( 200, "text/plain", "this works as well" );
-	} );
-	server.onNotFound ( handleNotFound );
-	server.begin();
-	Serial.println ( "HTTP server started" );
+  server_start();
 }
 
 void loop ( void ) {
@@ -153,3 +142,103 @@ void drawGraph() {
 
 	server.send ( 200, "image/svg+xml", out);
 }
+
+void connect_wifi(void){
+  //Inicia o WiFi
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando");
+  //Loop até conectar no WiFi
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+ 
+  //Logs na porta serial
+  Serial.println("");
+  Serial.println("WiFi conectado!");
+  Serial.print("Conectado na rede ");
+  Serial.println(WiFi.SSID());
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("Subnet Mask: ");
+  Serial.println(WiFi.subnetMask());
+  Serial.print("MAC Address: ");
+  Serial.println(WiFi.macAddress());
+  Serial.print("RSSI: ");
+  Serial.println(WiFi.RSSI());
+ 
+  digitalWrite(D6, HIGH);
+  delay(2000);
+}
+
+void server_start(void){
+
+  server.on ( "/", handleRoot );
+  server.on ( "/test.svg", drawGraph );
+  server.on ( "/inline", []() {
+    server.send ( 200, "text/plain", "this works as well" );
+  } );
+  server.onNotFound ( handleNotFound );
+  server.begin();
+  Serial.println ( "HTTP server started" );
+  
+}
+
+void init_OTA_OverTheAir(void){
+  
+  Serial.println("Booting");
+ 
+  ArduinoOTA.setHostname("espota");
+  // No authentication by default
+  // ArduinoOTA.setPassword("admin");
+ 
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = "sketch";
+    else // U_SPIFFS
+      type = "filesystem";
+ 
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+  Serial.println("Ready OTA ESP8266");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());  
+  
+}
+
+void start_servo(void){
+
+  myservo.attach(2);  // attaches the servo on GIO2 to the servo object 
+  int pos;
+
+  for(pos = 0; pos <= 180; pos += 1) // goes from 0 degrees to 180 degrees 
+  {                                  // in steps of 1 degree 
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
+  for(pos = 180; pos>=0; pos-=1)     // goes from 180 degrees to 0 degrees 
+  {                                
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
+
+}
+
