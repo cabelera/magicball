@@ -1,0 +1,11 @@
+2 motores
+2 rodas
+2 mosfet
+2 capacitores
+2 regulador de voltagem
+1 bateria recarregável
+1 esp8266
+1 bola    Polipropileno atóxico, possui um aditivo com propriedade antimicrobiana para a proteção da saúde do cão
+ (https://www.bitcao.com.br/pet-ball-bola-interativa.html)
+1 estrutura de dentro
+

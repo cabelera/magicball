@@ -38,17 +38,48 @@
  
 Servo myservo;  // create servo object to control a servo 
                 // twelve servo objects can be created on most boards
+
+
+// GPIO JÁ DEFINIDAS
+//static const uint8_t D0   = 16;
+//static const uint8_t D1   = 5;
+//static const uint8_t D2   = 4;
+//static const uint8_t D3   = 0;
+//static const uint8_t D4   = 2;
+//static const uint8_t D5   = 14;
+//static const uint8_t D6   = 12;
+//static const uint8_t D7   = 13;
+//static const uint8_t D8   = 15;
+//static const uint8_t D9   = 3;
+//static const uint8_t D10  = 1;
+
+/////////////////////
+// Pin Definitions //
+/////////////////////
+const int LED_PIN = D1; // Thing's onboard, green LED
+const int ANALOG_PIN = A0; // The only analog pin on the Thing
+const int DIGITAL_PIN = D6; // Digital pin to be read
+
+
                 
-//const char* ssid = "ACIDBURN";
-//const char* password = "day06031988";
+const char* ssid = "ACIDBURN";
+const char* password = "day06031988";
 
-const char* ssid = "lsiamostra24";
-const char* password = "lsiqazwsx";
+//const char* ssid = "lsiamostra24";
+//const char* password = "lsiqazwsx";
 
-ESP8266WebServer server ( 80 );
 
-const int led = LED_BUILTIN;
+const char WiFiAPPSK[] = "magicball";
 
+
+//ESP8266WebServer server ( 80 );
+
+WiFiServer server(80);
+
+
+//const int led = LED_BUILTIN;  // LED_BUILTIN = GPIO16
+
+/*
 void handleRoot() {
 
 	char temp[400];
@@ -56,6 +87,18 @@ void handleRoot() {
 	int min = sec / 60;
 	int hr = min / 60;
 
+  String luz = "off";
+  String message = "";
+  
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  
 	snprintf ( temp, 400,
 
 "<html>\
@@ -75,72 +118,150 @@ void handleRoot() {
 
 		hr, min % 60, sec % 60
 	);
-	server.send ( 200, "text/html", temp );
-}
 
-void handleNotFound() {
-	String message = "File Not Found\n\n";
-  String luz = "off";
-	message += "URI: ";
-	message += server.uri();
-	message += "\nMethod: ";
-	message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
-	message += "\nArguments: ";
-	message += server.args();
-	message += "\n";
 
-	for ( uint8_t i = 0; i < server.args(); i++ ) {
-		message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
-	}
+
+  for ( uint8_t i = 0; i < server.args(); i++ ) {
+    message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+  }
 
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if( server.argName ( i ) == "luz")
       luz = server.arg ( i );
   }
 
+  
+
   if(luz == "on"){
-    digitalWrite ( led, 1 );
+    Serial.println ( "ENTREI 1" );
+    digitalWrite ( D2, 1 );
   }else if(luz == "off"){
-    digitalWrite ( led, 0 );
+    Serial.println ( "ENTREI 2" );
+    digitalWrite ( D2, 0 );
   }
-
-
-	server.send ( 404, "text/plain", message );
+  
+	server.send ( 200, "text/html", temp );
 }
 
+
+
+// endereço não encontrado
+void handleNotFound() {
+
+	String message = "File Not Found\n\n";
+	server.send ( 404, "text/plain", message );
+
+}
+
+*/
+
 void setup ( void ) {
-	pinMode ( led, OUTPUT );
+	pinMode ( D2, OUTPUT );
 	Serial.begin ( 115200 );
-  connect_wifi();
-  init_OTA_OverTheAir();
+  initiate_as_access_point();
+  //connect_wifi();
+  //init_OTA_OverTheAir();
   
 	if ( MDNS.begin ( "esp8266" ) ) {
 		Serial.println ( "MDNS responder started" );
 	}
 
-  server_start();
+  server.begin();
+
+
+  //server_start();
 }
 
 void loop ( void ) {
-	server.handleClient();
+	//server.handleClient();
+
+
+
+
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(req);
+  client.flush();
+
+  // Match the request
+  int val = -1; // We'll use 'val' to keep track of both the
+                // request type (read/set) and value if set.
+  if (req.indexOf("/led/0") != -1)
+    val = 0; // Will write LED low
+  else if (req.indexOf("/led/1") != -1)
+    val = 1; // Will write LED high
+  else if (req.indexOf("/read") != -1)
+    val = -2; // Will print pin reads
+  // Otherwise request will be invalid. We'll say as much in HTML
+
+  // Set GPIO5 according to the request
+  if (val >= 0)
+    digitalWrite(LED_PIN, val);
+
+  client.flush();
+
+  // Prepare the response. Start with the common header:
+  String s = "HTTP/1.1 200 OK\r\n";
+  s += "Content-Type: text/html\r\n\r\n";
+  s += "<!DOCTYPE HTML>\r\n<html>\r\n";
+  // If we're setting the LED, print out a message saying we did
+  if (val >= 0)
+  {
+    s += "LED is now ";
+    s += (val)?"on":"off";
+  }
+  else if (val == -2)
+  { // If we're reading pins, print out those values:
+    s += "Analog Pin = ";
+    s += String(analogRead(ANALOG_PIN));
+    s += "<br>"; // Go to the next line.
+    s += "Digital Pin 12 = ";
+    s += String(digitalRead(DIGITAL_PIN));
+  }
+  else
+  {
+    s += "Invalid Request.<br> Try /led/1, /led/0, or /read.";
+  }
+  s += "</html>\n";
+
+  // Send the response to the client
+  client.print(s);
+  delay(1);
+  Serial.println("Client disonnected");
+
+  // The client will actually be disconnected 
+  // when the function returns and 'client' object is detroyed
+
+  
 }
 
-void drawGraph() {
-	String out = "";
-	char temp[100];
-	out += "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"400\" height=\"150\">\n";
- 	out += "<rect width=\"400\" height=\"150\" fill=\"rgb(250, 230, 210)\" stroke-width=\"1\" stroke=\"rgb(0, 0, 0)\" />\n";
- 	out += "<g stroke=\"black\">\n";
- 	int y = rand() % 130;
- 	for (int x = 10; x < 390; x+= 10) {
- 		int y2 = rand() % 130;
- 		sprintf(temp, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke-width=\"1\" />\n", x, 140 - y, x + 10, 140 - y2);
- 		out += temp;
- 		y = y2;
- 	}
-	out += "</g>\n</svg>\n";
 
-	server.send ( 200, "image/svg+xml", out);
+void initiate_as_access_point()
+{
+  WiFi.mode(WIFI_AP);
+
+  // Do a little work to get a unique-ish name. Append the
+  // last two bytes of the MAC (HEX'd) to "Thing-":
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+  String AP_NameString = "Magicball " + macID + " Network";
+
+  char AP_NameChar[AP_NameString.length() + 1];
+  memset(AP_NameChar, 0, AP_NameString.length() + 1);
+
+  for (int i=0; i<AP_NameString.length(); i++)
+    AP_NameChar[i] = AP_NameString.charAt(i);
+
+  WiFi.softAP(AP_NameChar, WiFiAPPSK);
 }
 
 void connect_wifi(void){
@@ -167,10 +288,12 @@ void connect_wifi(void){
   Serial.println(WiFi.macAddress());
   Serial.print("RSSI: ");
   Serial.println(WiFi.RSSI());
- 
-  digitalWrite(D6, HIGH);
-  delay(2000);
+
+
 }
+
+
+/*
 
 void server_start(void){
 
@@ -184,6 +307,7 @@ void server_start(void){
   Serial.println ( "HTTP server started" );
   
 }
+
 
 void init_OTA_OverTheAir(void){
   
@@ -241,4 +365,6 @@ void start_servo(void){
   } 
 
 }
+
+*/
 
