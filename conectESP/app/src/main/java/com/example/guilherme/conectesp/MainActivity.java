@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +34,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements JoystickMovedListener {
 
     EditText editIp;
     Button btnOn, btnOff;
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
         btnOff = (Button)findViewById(R.id.boff);
         textInfo1 = (TextView)findViewById(R.id.info1);
         textInfo2 = (TextView)findViewById(R.id.info2);
+
+        //ImageView directionalBtn = (ImageView) findViewById(R.id.directBtn);
 
         ArrayList<String> listItems=new ArrayList<String>();
         ArrayAdapter<String> adapter;
@@ -104,9 +107,17 @@ public class MainActivity extends AppCompatActivity {
         btnOn.setOnClickListener(btnOnOffClickListener);
         btnOff.setOnClickListener(btnOnOffClickListener);
 
-
+        //directionalBtn.setOnClickListener(btnDirectionalClickListener);
 
     }
+
+
+    View.OnClickListener btnDirectionalClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+        }
+    };
 
 
     View.OnClickListener btnOnOffClickListener = new View.OnClickListener(){
@@ -131,6 +142,16 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    @Override
+    public void OnMoved(int xPercent, int yPercent) {
+        Log.i("Main method", "X Percent : " + xPercent + "Y Percent : " + yPercent);
+    }
+
+    @Override
+    public void OnReleased() {
+
+    }
 
 
     private class TaskEsp extends AsyncTask<String, Void, String> {
