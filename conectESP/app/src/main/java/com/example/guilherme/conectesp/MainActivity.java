@@ -4,21 +4,23 @@ import android.Manifest;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.*;
 
 import java.io.BufferedInputStream;
@@ -28,9 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,17 +45,32 @@ public class MainActivity extends AppCompatActivity implements JoystickMovedList
     WifiManager wifi;
 
 
+    //Progress bar variables
+    private static final int PROGRESS = 0x1;
+    private ProgressBar mProgress;
+    private ImageView doganimation;
+
+    private int mProgressStatus = 0;
+    private Handler mHandler = new Handler();
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.loadingscreen);
 
+
+        /*
         wifiList = (ListView) findViewById(R.id.wifiList);
         editIp = (EditText)findViewById(R.id.ip);
         btnOn = (Button)findViewById(R.id.bon);
         btnOff = (Button)findViewById(R.id.boff);
         textInfo1 = (TextView)findViewById(R.id.info1);
         textInfo2 = (TextView)findViewById(R.id.info2);
+
+*/
 
         //ImageView directionalBtn = (ImageView) findViewById(R.id.directBtn);
 
@@ -104,10 +119,89 @@ public class MainActivity extends AppCompatActivity implements JoystickMovedList
 
 
 
-        btnOn.setOnClickListener(btnOnOffClickListener);
-        btnOff.setOnClickListener(btnOnOffClickListener);
+        //btnOn.setOnClickListener(btnOnOffClickListener);
+        //btnOff.setOnClickListener(btnOnOffClickListener);
 
         //directionalBtn.setOnClickListener(btnDirectionalClickListener);
+
+
+
+
+
+        //Testing progress bar
+        //ProgressBar mProgress = (ProgressBar) findViewById(R.id.progressbar);
+        //mProgress.setProgress(50);
+
+        
+
+        // Dog animation running in background
+        // Load the ImageView that will host the animation and
+        // set its background to our AnimationDrawable XML resource.
+        doganimation = (ImageView) findViewById(R.id.doganimation);
+        doganimation.setBackgroundResource(R.drawable.animationlist);
+
+        // Get the background, which has been compiled to an AnimationDrawable object.
+        AnimationDrawable frameAnimation = (AnimationDrawable) doganimation.getBackground();
+
+        // Start the animation (looped playback by default).
+        frameAnimation.start();
+
+
+        /*
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int index = 0;
+                while (index < 21) {
+
+                    /*
+
+                    String dogs = "running_dog000" + index;
+
+                    System.out.println(dogs);
+
+                    int resID = getResources().getIdentifier(dogs, "drawable", getPackageName());
+                    if (resID != 0){
+                        doganimation.setImageResource(resID);
+                    }
+                    SystemClock.sleep(2000);
+
+                    if(index == 20)
+                        index = -1;
+
+                    index++;
+
+
+
+                }
+            }
+        });
+
+
+*/
+
+
+        // Start lengthy operation in a background thread
+        mProgress = (ProgressBar) findViewById(R.id.progressbar);
+
+        // Start lengthy operation in a background thread
+        new Thread(new Runnable() {
+            public void run() {
+                while (mProgressStatus < 100) {
+
+                    mProgress.setProgress(mProgressStatus);
+                    SystemClock.sleep(1000);
+                    mProgressStatus++;
+
+                }
+            }
+        }).start();
+
+
+
+        //como chamar uma activity
+        //Intent intent = new Intent(this, SegundaActivity.class);
+        //startActivity(intent);
 
     }
 
