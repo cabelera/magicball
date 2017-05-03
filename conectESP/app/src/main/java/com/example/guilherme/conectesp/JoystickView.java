@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class JoystickView extends View {
+public class JoystickView extends View implements JoystickMovedListener {
 
     // =========================================
     // Private Members
@@ -180,5 +180,15 @@ public class JoystickView extends View {
         if (listener != null) {
             listener.OnReleased();
         }
+    }
+
+    @Override
+    public void OnMoved(int xPercent, int yPercent) {
+        Log.i("Main method", "X Percent : " + xPercent + "Y Percent : " + yPercent);
+    }
+
+    @Override
+    public void OnReleased() {
+
     }
 }

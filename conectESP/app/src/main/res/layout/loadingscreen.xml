@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".ProgressBarActivity">
 
     <ProgressBar
         android:id="@+id/progressbar"
@@ -21,7 +23,7 @@
         android:layout_below="@+id/progressbar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="18dp"
-        android:text="Localizando a Bola Amiga ..." />
+        android:text="Localizando Full Fun ..." />
 
     <ImageView
         android:id="@+id/doganimation"
@@ -39,7 +41,9 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="31dp"
         android:fontFamily="casual"
-        android:text="Bola Amiga"
-        android:textSize="36sp" />
+        android:text="Full Fun"
+        android:textAllCaps="false"
+        android:textSize="36sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>
