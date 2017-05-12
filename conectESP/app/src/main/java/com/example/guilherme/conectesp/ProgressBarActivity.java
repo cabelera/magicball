@@ -6,32 +6,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.TextureView;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.*;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,9 +31,9 @@ public class ProgressBarActivity extends AppCompatActivity {
     //Progress bar variables
     private static final int PROGRESS = 0x1;
     private ProgressBar mProgress;
+    private int mProgressStatus = 0;
     private ImageView doganimation;
 
-    private int mProgressStatus = 0;
     private Handler mHandler = new Handler();
 
 
@@ -113,7 +98,7 @@ public class ProgressBarActivity extends AppCompatActivity {
 
     public void findAllWifi() {
 
-        wifiList = (ListView) findViewById(R.id.wifiList);
+        //wifiList = (ListView) findViewById(R.id.wifiList);
 
         //ImageView directionalBtn = (ImageView) findViewById(R.id.directBtn);
 
@@ -150,7 +135,7 @@ public class ProgressBarActivity extends AppCompatActivity {
                     adapter = new ArrayAdapter<String>(this,
                             android.R.layout.simple_list_item_1,
                             listItems);
-                    wifiList.setAdapter(adapter);
+                    //wifiList.setAdapter(adapter);
                     adapter.add(wifiScanList.get(p).SSID);
 
                     adapter.notifyDataSetChanged();

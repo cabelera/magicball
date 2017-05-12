@@ -7,6 +7,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public class WifiScanReceiver extends BroadcastReceiver {
     final private OnScanListener[] scanListeners;
     final private WifiManager wifi;
+    final List<String> listOfProvider;
 
 
     public interface OnScanListener {
@@ -27,6 +30,7 @@ public class WifiScanReceiver extends BroadcastReceiver {
     public WifiScanReceiver(WifiManager wifi, OnScanListener... scanListener) {
         this.scanListeners = scanListener;
         this.wifi = wifi;
+        listOfProvider = null;
     }
 
     public void onReceive(Context context, Intent intent) {
@@ -62,6 +66,35 @@ public class WifiScanReceiver extends BroadcastReceiver {
             networks[i++] = it.next();
         for (OnScanListener scanListener : scanListeners)
             scanListener.onScanFinished(networks);
+
+        //sortByFrequency();
+    }
+
+    // This method call when number of wifi connections changed
+    public void sortByFrequency() {
+        List<ScanResult> wifiList = wifi.getScanResults();
+
+            /* sorting of wifi provider based on level */
+        Collections.sort(wifiList, new Comparator<ScanResult>() {
+            @Override
+            public int compare(ScanResult lhs, ScanResult rhs) {
+                return (lhs.level > rhs.level ? -1
+                        : (lhs.level == rhs.level ? 0 : 1));
+            }
+        });
+        listOfProvider.clear();
+        String providerName;
+        for (int i = 0; i < wifiList.size(); i++) {
+                /* to get SSID and BSSID of wifi provider*/
+            providerName = (wifiList.get(i).SSID).toString()
+                    +"\n"+(wifiList.get(i).BSSID).toString();
+            listOfProvider.add(providerName);
+        }
+            /*setting list of all wifi provider in a List*/
+        //adapter = new ListAdapter(MainActivity.this, listOfProvider);
+        //listViwProvider.setAdapter(adapter);
+
+        //adapter.notifyDataSetChanged();
     }
 
 }

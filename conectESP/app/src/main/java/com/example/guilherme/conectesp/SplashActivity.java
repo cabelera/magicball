@@ -1,6 +1,7 @@
 package com.example.guilherme.conectesp;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
@@ -13,6 +14,8 @@ public class SplashActivity extends AppCompatActivity implements Runnable {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splashscreen);
 
+        //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         Handler handler = new Handler();
         handler.postDelayed(this, 3000);
 
@@ -20,7 +23,7 @@ public class SplashActivity extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
-        Intent intent = new Intent(this, ProgressBarActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
     }
