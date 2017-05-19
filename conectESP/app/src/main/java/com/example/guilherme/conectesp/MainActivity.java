@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.SwitchCompat;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,13 +32,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,18 +111,60 @@ public class MainActivity extends FragmentActivity//AppCompatActivity
     }
 
 
+    public void enableWifiDialog() {
+
+        //verifica se wifi ligado
+        wifi = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (!wifi.isWifiEnabled()) {
+
+            LayoutInflater inflat = MainActivity.this.getLayoutInflater();
+            View vw = inflat.inflate(R.layout.activity_enable_wifi, null);
+
+            final Switch wifiBtn = (Switch) vw.findViewById(R.id.wifiBtn);
+
+            wifiBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                    if (isChecked) {
+                        wifi.setWifiEnabled(true);
+                        wifiScanList = showWifi();
+                        showWifiDialog();
+                    } else {
+                        wifi.setWifiEnabled(false);
+                    }
+                }
+            });
+
+
+            AlertDialog.Builder builderPass = new AlertDialog.Builder(MainActivity.this);
+            builderPass.setView(vw)
+                    .setNegativeButton("CANCELAR", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            }
+                    );
+            AlertDialog dialogPass = builderPass.create();
+            dialogPass.show();
+
+        }else{
+            showWifiDialog();
+        }
+
+    }
+
+
     public void showWifiDialog() {
 
-        List<ScanResult> wifiList = showWifi();
         CharSequence[] listItems;
 
-        if(wifiList != null && wifiList.size() != 0) {
-            System.out.println("Entrei wifi 1 : ");
-            listItems = new CharSequence[wifiList.size()];
+        if(wifiScanList != null && wifiScanList.size() != 0) {
+            listItems = new CharSequence[wifiScanList.size()];
 
-            for (int p = 0; p < wifiList.size(); p++) {
-                if(wifiList.get(p).SSID.toString() != "")
-                    listItems[p] = wifiList.get(p).SSID;
+            for (int p = 0; p < wifiScanList.size(); p++) {
+                if(wifiScanList.get(p).SSID.toString() != "")
+                    listItems[p] = wifiScanList.get(p).SSID;
                 System.out.println("Wifi : " + p + " -- " + listItems[p]);
             }
 
@@ -218,17 +264,9 @@ public class MainActivity extends FragmentActivity//AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {  // tools button
-
-            showWifiDialog();
-
-        } else if (id == R.id.nav_share) {
+        if (id == R.id.nav_wifi) {
+            enableWifiDialog();
+        } else if (id == R.id.nav_wideweb) {
 
         } else if (id == R.id.nav_send) {
 
@@ -249,7 +287,7 @@ public class MainActivity extends FragmentActivity//AppCompatActivity
 
         //configuração de wifi
         wifi = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifi.setWifiEnabled(true); // Liga o WiFi
+        //wifi.setWifiEnabled(true); // Liga o WiFi
 
 
         //se wifi ligado
